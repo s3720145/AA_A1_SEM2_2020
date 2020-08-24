@@ -10,10 +10,38 @@ import java.util.List;
  */
 public class OrderedLinkedListMultiset extends RmitMultiset
 {
+    // reference for head node
+    private Node mHead;
+    
+    // reference for number of items in multiset
+    private int length;
+
+    public OrderedLinkedListMultiset() {
+        this.mHead = null;
+        this.length = 0;
+    }
 
     @Override
 	public void add(String item) {
         // Implement me!
+        Node newNode = new Node(item);
+
+        // IF the list is empty, then make the node as head
+        if(mHead == null) {
+            mHead = newNode;
+        } else if() {
+            // ELSE IF the node value is smaller than the head node, insert the node at the start and make it
+            // the new head node
+
+            // USE compareTo() to compare lexicographically
+        } else {
+            // ELSE iterate through the LL until a node with a larger value than the item is found
+            // IF value is larger than the item, insert the node
+            if() {
+
+            }
+        }
+
     } // end of add()
 
 

@@ -8,7 +8,6 @@ public class Node {
     private Node mNext;
 
     // Stored reference to previous node
-    // NOTE: Only use in DualLinkedListMultiset.java
     private Node mPrev;
 
     public Node(String value) {

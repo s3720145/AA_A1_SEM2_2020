@@ -173,6 +173,8 @@ public class OrderedLinkedListMultiset extends RmitMultiset
     @Override
 	public String print() {
         StringBuffer sOut = new StringBuffer();
+        String[] sOutArray = new String[100];
+        int sOutArrayLength = 0;
               
         if(mHead == null) {
             sOut.append("Error - No nodes in data structure\n");
@@ -184,14 +186,23 @@ public class OrderedLinkedListMultiset extends RmitMultiset
                 if(currentNode.getValue().compareTo(currentNode.getNext().getValue()) == 0) {
                     ++counter;
                 } else {
-                    sOut.append(currentNode.getValue() + ":" + counter + "\n");
+                    sOutArray[sOutArrayLength] = currentNode.getValue() + ":" + counter + "\n";
+                    ++sOutArrayLength;
                     counter = 1;
                 }
 
                 currentNode = currentNode.getNext();
             }
 
-            sOut.append(currentNode.getValue() + ":" + counter + "\n");
+            sOutArray[sOutArrayLength] = currentNode.getValue() + ":" + counter + "\n";
+            ++sOutArrayLength;
+        }
+
+        // SORT sOutArray
+        mergeSortForInstances(sOutArray, new String[length], 0, sOutArrayLength - 1);
+
+        for(int i = 0; i < sOutArrayLength; ++i) {
+            sOut.append(sOutArray[i]);
         }
 
         return sOut.toString();
@@ -247,5 +258,49 @@ public class OrderedLinkedListMultiset extends RmitMultiset
         // Placeholder, please update.
         return null;
     } // end of difference()
+
+    public void mergeSortForInstances(String[] sOutArray, String[] temp, int leftStart, int rightEnd) {
+        if(leftStart >= rightEnd) {
+            return;
+        }
+
+        int middle = (leftStart + rightEnd) / 2;
+        // sorting left
+        mergeSortForInstances(sOutArray, temp, leftStart, middle);
+        // sorting right
+        mergeSortForInstances(sOutArray, temp, middle + 1, rightEnd);
+        // merging halves
+        mergeHalves(sOutArray, temp, leftStart, rightEnd);
+    }
+
+    public void mergeHalves(String[] sOutArray, String[] temp, int leftStart, int rightEnd) {
+        int leftEnd = (rightEnd + leftStart) / 2;
+        int rightStart = leftEnd + 1;
+        int size = rightEnd - leftStart + 1;
+
+        int left = leftStart;
+        int right = rightStart;
+        int index = leftStart;
+
+        while(left <= leftEnd && right <= rightEnd) {
+            if(sOutArray[left].substring(sOutArray[left].length() - 1).
+            compareTo(sOutArray[right].substring(sOutArray[right].length() - 1)) <= 0) {
+                temp[index] = sOutArray[left];
+                ++left;
+            } else {
+                temp[index] = sOutArray[right];
+                ++right;
+            }
+             
+            ++index;
+        }
+
+        // copies elements from the left side
+        System.arraycopy(sOutArray, left, temp, index, leftEnd - left + 1);
+        // copies elements from the right side
+        System.arraycopy(sOutArray, right, temp, index, rightEnd - right + 1);
+        // copies everything from temp back into sOutArray
+        System.arraycopy(temp, leftStart, sOutArray, leftStart, size);
+    }
 
 } // end of class OrderedLinkedListMultiset

@@ -21,6 +21,10 @@ public class OrderedLinkedListMultiset extends RmitMultiset
         this.length = 0;
     }
 
+    public Node getHead() {
+        return this.mHead;
+    }
+
     @Override
 	public void add(String item) {
         Node newNode = new Node(item);
@@ -59,7 +63,6 @@ public class OrderedLinkedListMultiset extends RmitMultiset
         
         ++length;
     } // end of add()
-
 
     @Override
 	public int search(String item) {
@@ -155,7 +158,11 @@ public class OrderedLinkedListMultiset extends RmitMultiset
                 currentNode = null;
             } else {
                 while(currentNode != null) {
-                    if(currentNode.getValue().compareTo(item) == 0) {
+                    if(currentNode.getNext() == null) {
+                        prevNode.setNext(null);
+                        currentNode = null;
+                        break;
+                    } else if(currentNode.getValue().compareTo(item) == 0) {
                         prevNode.setNext(currentNode.getNext());
                         currentNode = null;
                         break;
@@ -166,7 +173,6 @@ public class OrderedLinkedListMultiset extends RmitMultiset
                 }
             }
         }
-
     } // end of removeOne()
 
 
@@ -238,25 +244,79 @@ public class OrderedLinkedListMultiset extends RmitMultiset
 
     @Override
 	public RmitMultiset union(RmitMultiset other) {
+        RmitMultiset union = new OrderedLinkedListMultiset();
+        OrderedLinkedListMultiset casted = (OrderedLinkedListMultiset) other;
+        Node currentNode = mHead;
 
-        // Placeholder, please update.
-        return null;
+        // inserting nodes from THIS linked list
+        while(currentNode != null) {
+            union.add(currentNode.getValue());
+            currentNode = currentNode.getNext();
+        }
+
+        // inserting nodes from the other multiset
+        currentNode = casted.getHead();
+        while(currentNode != null) {
+            union.add(currentNode.getValue());
+            currentNode = currentNode.getNext();
+        }
+
+        return union;
     } // end of union()
 
 
     @Override
 	public RmitMultiset intersect(RmitMultiset other) {
+        RmitMultiset intersect = new OrderedLinkedListMultiset();
+        OrderedLinkedListMultiset casted = (OrderedLinkedListMultiset) other;
+        Node currentNode = mHead;
+        Node currentNodeOther = casted.getHead();
 
-        // Placeholder, please update.
-        return null;
+        // ONLY WORKS IN A SORTED LINKED LIST
+        // if currentNode < currentNodeOther, advance currentNode
+        // if currentNodeOther < currentNode, advance currentNodeOther
+        // if equal, add to intersect and advance both currentNode and currentNodeOther
+
+        while(currentNode != null && currentNodeOther != null) {
+            if(currentNode.getValue().compareTo(currentNodeOther.getValue()) < 0) {
+                currentNode = currentNode.getNext();
+            } else if(currentNodeOther.getValue().compareTo(currentNode.getValue()) < 0) {
+                currentNodeOther = currentNodeOther.getNext();
+            } else {
+                intersect.add(currentNode.getValue());
+                currentNode = currentNode.getNext();
+                currentNodeOther = currentNodeOther.getNext();
+            }
+        }
+        
+        return intersect;
     } // end of intersect()
 
 
     @Override
 	public RmitMultiset difference(RmitMultiset other) {
+        RmitMultiset difference = new OrderedLinkedListMultiset();
+        OrderedLinkedListMultiset casted = (OrderedLinkedListMultiset) other;
+        Node currentNode = mHead;
+        Node currentNodeOther = casted.getHead();
 
-        // Placeholder, please update.
-        return null;
+        // subtract a linked list from the other
+        while(currentNode != null && currentNodeOther != null) {
+            if(currentNode.getValue().compareTo(currentNodeOther.getValue()) < 0) {
+                difference.add(currentNode.getValue());
+                difference.add(currentNodeOther.getValue());
+                currentNode = currentNode.getNext();
+            } else if(currentNodeOther.getValue().compareTo(currentNode.getValue()) < 0) {
+                difference.add(currentNodeOther.getValue());
+                difference.add(currentNode.getValue());
+                currentNodeOther = currentNodeOther.getNext();
+            } else {
+                currentNode = currentNode.getNext();
+                currentNodeOther = currentNodeOther.getNext();
+            }
+        }
+        
+        return difference;
     } // end of difference()
 
     public void mergeSortForInstances(String[] sOutArray, String[] temp, int leftStart, int rightEnd) {

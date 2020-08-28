@@ -173,6 +173,8 @@ public class OrderedLinkedListMultiset extends RmitMultiset
                 }
             }
         }
+
+        --length;
     } // end of removeOne()
 
 
@@ -221,10 +223,8 @@ public class OrderedLinkedListMultiset extends RmitMultiset
 
         if(mHead == null) {
             sOut.append("Error - No nodes in data structure\n");
-        } else if(contains(lower) == false) {
-            sOut.append("Error - lower bound does not exist\n");
-        } else if(contains(upper) == false) {
-            sOut.append("Error - upper bound does not exist\n");
+        } else if(upper.compareTo(lower) < 0) {
+            sOut.append("Error - Invalid upper and lower boundaries");
         } else {
             Node currentNode = mHead;
 
@@ -300,14 +300,12 @@ public class OrderedLinkedListMultiset extends RmitMultiset
         Node currentNode = mHead;
         Node currentNodeOther = casted.getHead();
 
-        // subtract a linked list from the other
+        // Difference is those elements in this multiset, subtract the elements in the other multiset.
         while(currentNode != null && currentNodeOther != null) {
             if(currentNode.getValue().compareTo(currentNodeOther.getValue()) < 0) {
                 difference.add(currentNode.getValue());
-                difference.add(currentNodeOther.getValue());
                 currentNode = currentNode.getNext();
             } else if(currentNodeOther.getValue().compareTo(currentNode.getValue()) < 0) {
-                difference.add(currentNodeOther.getValue());
                 difference.add(currentNode.getValue());
                 currentNodeOther = currentNodeOther.getNext();
             } else {

@@ -14,6 +14,8 @@ public class DualLinkedListMultiset extends RmitMultiset
     private Node mHeadOriginal;
     // reference to head node of LL ordered by instance count
     private Node mHeadInstance;
+    // keeps number of 
+    private String[] instanceCount;
 
     // reference to number of element in the multiset
     private int length;
@@ -21,12 +23,35 @@ public class DualLinkedListMultiset extends RmitMultiset
     public DualLinkedListMultiset() {
         this.mHeadOriginal = null;
         this.mHeadInstance = null;
+        this.instanceCount = new String[1000];
         this.length = 0;
     }
 
     @Override
 	public void add(String item) {
         Node newNode = new Node(item);
+
+        // TODO: have a node that stores both item and value
+
+        // add into instance count array
+        if(instanceCount[0] == null) {
+            // if array is empty
+            instanceCount[0] = item + ":1";
+        } else {
+            int index = 0;
+            while(instanceCount[index] != null) {
+                // if the end of the array is reached
+                if(instanceCount[index + 1] == null) {
+                    instanceCount[index + 1] = item + ":1";
+                } else if(instanceCount[index].substring(0, instanceCount[index].indexOf(':')).compareTo(item) == 0) {
+                    int numInstances = Integer.parseInt(instanceCount[index].substring(instanceCount[index].indexOf(':') + 1, 
+                    instanceCount[index].length())) + 1;
+                    instanceCount[index] = item + ":" + numInstances;
+                    break;
+                }
+                ++index;
+            }
+        }
 
         // add into original LL
         // if the LL is empty
@@ -54,6 +79,8 @@ public class DualLinkedListMultiset extends RmitMultiset
                 currentNode = currentNode.getNext();
             }
         }
+
+        // add into LL sorted by instance count
 
         ++length;
     } // end of add()
@@ -129,5 +156,53 @@ public class DualLinkedListMultiset extends RmitMultiset
         // Placeholder, please update.
         return null;
     } // end of difference()
+
+
+    public void mergeSortForInstances(String[] sOutArray, String[] temp, int leftStart, int rightEnd) {
+        if(leftStart >= rightEnd) {
+            return;
+        }
+
+        int middle = (leftStart + rightEnd) / 2;
+        // sorting left
+        mergeSortForInstances(sOutArray, temp, leftStart, middle);
+        // sorting right
+        mergeSortForInstances(sOutArray, temp, middle + 1, rightEnd);
+        // merging halves
+        mergeHalves(sOutArray, temp, leftStart, rightEnd);
+    }
+
+
+    public void mergeHalves(String[] sOutArray, String[] temp, int leftStart, int rightEnd) {
+        int leftEnd = (rightEnd + leftStart) / 2;
+        int rightStart = leftEnd + 1;
+        int size = rightEnd - leftStart + 1;
+
+        int left = leftStart;
+        int right = rightStart;
+        int index = leftStart;
+
+        while(left <= leftEnd && right <= rightEnd) {
+            // take the substring occuring after ':'
+            String leftValue = sOutArray[left].substring(sOutArray[left].indexOf(':') + 1, sOutArray[left].length());
+            String rightValue = sOutArray[right].substring(sOutArray[right].indexOf(':') + 1, sOutArray[right].length());
+            if(leftValue.compareTo(rightValue) <= 0) {
+                temp[index] = sOutArray[right];
+                ++right;
+            } else {
+                temp[index] = sOutArray[left];
+                ++left;
+            }
+             
+            ++index;
+        }
+
+        // copies elements from the left side
+        System.arraycopy(sOutArray, left, temp, index, leftEnd - left + 1);
+        // copies elements from the right side
+        System.arraycopy(sOutArray, right, temp, index, rightEnd - right + 1);
+        // copies everything from temp back into sOutArray
+        System.arraycopy(temp, leftStart, sOutArray, leftStart, size);
+    }
 
 } // end of class DualLinkedListMultiset

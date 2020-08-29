@@ -4,6 +4,8 @@ public class Node {
     // Stored value of the node
     private String value;
 
+    private int instanceCount;
+
     // Stored reference to next node
     private Node mNext;
 
@@ -12,6 +14,7 @@ public class Node {
 
     public Node(String value) {
         this.value = value;
+        this.instanceCount = 0;
         this.mNext = null;
         this.mPrev = null;
     }
@@ -20,12 +23,20 @@ public class Node {
         return this.value;
     }
 
+    public int getInstanceCount() {
+        return this.instanceCount;
+    }
+
     public Node getNext() {
         return this.mNext;
     }
 
     public Node getPrev() {
         return this.mPrev;
+    }
+
+    public void setInstanceCount(int instanceCount) {
+        this.instanceCount = instanceCount;
     }
 
     public void setNext(Node mNext) {

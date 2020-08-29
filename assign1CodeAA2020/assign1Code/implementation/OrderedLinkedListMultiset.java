@@ -1,6 +1,6 @@
 package implementation;
 
-import java.util.List; 
+import java.util.List;
 
 /**
  * Ordered linked list implementation of a multiset.  See comments in RmitMultiset to
@@ -27,51 +27,36 @@ public class OrderedLinkedListMultiset extends RmitMultiset
 
     @Override
 	public void add(String item) {
-        Node newNode = new Node(item);
-                
         if(mHead == null) {
-            // if the LL is empty
-            newNode.setInstanceCount(1);
-            mHead = newNode;
+            // list empty
+            mHead = new Node(item);
+        } else if(item.compareTo(mHead.getValue()) == 0) {
+            // item equals mhead
+            mHead.setInstanceCount(mHead.getInstanceCount() + 1);
         } else if(item.compareTo(mHead.getValue()) < 0) {
-            // if the value is less than the head
+            // item is less than mhead
+            Node newNode = new Node(item);
             newNode.setNext(mHead);
-            newNode.setInstanceCount(1);
             mHead = newNode;
         } else {
+            // iterate thru LL to find suitable insert
             Node currentNode = mHead;
 
             while(currentNode != null) {
                 if(currentNode.getNext() == null) {
-                    // if the loop reaches the end of the LL
-                    if(item.compareTo(currentNode.getValue()) == 0) {
-                        // if the last value equals new node
-                        currentNode.setInstanceCount(currentNode.getInstanceCount() + 1);
-                        newNode.setInstanceCount(currentNode.getInstanceCount());
-                    } else {
-                        // else if new node is a unique value
-                        newNode.setInstanceCount(1);
-                    }
+                    // if the end of the list is reached
+                    currentNode.setNext(new Node(item));
+                    break;
+                } else if(item.compareTo(currentNode.getNext().getValue()) == 0) {
+                    // if currentNode has the same value as item
+                    currentNode.getNext().setInstanceCount(currentNode.getNext().getInstanceCount() + 1);
+                    break;
+                } else if(item.compareTo(currentNode.getNext().getValue()) < 0) {
+                    // item is less than current node
+                    Node newNode = new Node(item);
+                    newNode.setNext(currentNode.getNext());
                     currentNode.setNext(newNode);
                     break;
-                } else {
-                    // both if statements can be true
-                    if(item.compareTo(currentNode.getValue()) == 0) {
-                        // if we find a node with the same value, update instance count
-                        currentNode.setInstanceCount(currentNode.getInstanceCount() + 1);
-                        newNode.setInstanceCount(currentNode.getInstanceCount());
-    
-                    }
-    
-                    if(item.compareTo(currentNode.getNext().getValue()) < 0) {
-                        // if we find a node value larger then newNode insert
-                        if(newNode.getInstanceCount() == 0) {
-                            newNode.setInstanceCount(1);
-                        }
-                        newNode.setNext(currentNode.getNext());
-                        currentNode.setNext(newNode);
-                        break;
-                    }
                 }
 
                 currentNode = currentNode.getNext();
@@ -89,13 +74,12 @@ public class OrderedLinkedListMultiset extends RmitMultiset
             Node currentNode = mHead;
 
             // Moves past node values that are not equal to item
-            while(currentNode != null && currentNode.getValue().compareTo(item) != 0) {
+            while(currentNode != null) {
+                if(item.compareTo(currentNode.getValue()) == 0) {
+                    numOccurences = currentNode.getInstanceCount();
+                    break;
+                }
                 currentNode = currentNode.getNext();
-            }
-
-            // if the current node value equals item, set numOccurences to instance count, otherwise numOccurences = -1
-            if(currentNode != null && currentNode.getValue().compareTo(item) == 0) {
-                numOccurences = currentNode.getInstanceCount();
             }
         }
         
@@ -111,19 +95,13 @@ public class OrderedLinkedListMultiset extends RmitMultiset
             outList.add("Error - No nodes in data structure");
         } else {
             Node currentNode = mHead;
-            String temp = "";
 
             while(currentNode != null) {
-                if(currentNode.getInstanceCount() == instanceCount && currentNode.getValue().compareTo(temp) != 0) {
+                if(currentNode.getInstanceCount() == instanceCount) {
                     outList.add(currentNode.getValue());
-                    temp = currentNode.getValue();
                 }
 
                 currentNode = currentNode.getNext();
-            }
-
-            if(outList.isEmpty() == true) {
-                outList.add("Could not find elements matching instance count");
             }
         }
 
@@ -158,27 +136,32 @@ public class OrderedLinkedListMultiset extends RmitMultiset
             Node currentNode = mHead;
             Node prevNode = null;
 
-            // IF deleting head and instance count equals 1
-            if(item.compareTo(currentNode.getValue()) == 0 && currentNode.getInstanceCount() == 1) {
+            // deleting head when instance count = 1
+            if(item.compareTo(mHead.getValue()) == 0 && mHead.getInstanceCount() == 1) {
                 mHead = currentNode.getNext();
                 currentNode = null;
+            } else if(item.compareTo(mHead.getValue()) == 0) {
+                // decreasing head instance count by 1
+                mHead.setInstanceCount(mHead.getInstanceCount() - 1);
             } else {
                 while(currentNode != null) {
-                    // if the end of the list is reached
-                    if(currentNode.getNext() == null) {
-                        prevNode.setNext(null);
-                        currentNode = null;
-                        break;
-                    } else {
-                        // both if statements can be true at the same time
-                        if(item.compareTo(currentNode.getValue()) == 0) {
+                    // if deleting the last node on the list
+                    if(currentNode.getNext() == null && item.compareTo(currentNode.getValue()) == 0) {
+                        if(currentNode.getInstanceCount() == 1) {
+                            prevNode.setNext(null);
+                            currentNode = null;
+                        } else {
                             currentNode.setInstanceCount(currentNode.getInstanceCount() - 1);
                         }
-
-                        if(item.compareTo(currentNode.getNext().getValue()) < 0) {
-                            // if a larger value is found
+                        break;
+                    } else if(item.compareTo(currentNode.getValue()) == 0) {
+                        // if finding a node of equal value
+                        if(currentNode.getInstanceCount() == 1) {
                             prevNode.setNext(currentNode.getNext());
                             currentNode = null;
+                            break;
+                        } else {
+                            currentNode.setInstanceCount(currentNode.getInstanceCount() - 1);
                             break;
                         }
                     }
@@ -203,14 +186,10 @@ public class OrderedLinkedListMultiset extends RmitMultiset
             sOut.append("Error - No nodes in data structure\n");
         } else {
             Node currentNode = mHead;
-            String temp = "";
             
             while(currentNode != null) {
-                if(currentNode.getValue().compareTo(temp) != 0) {
-                    temp = currentNode.getValue();
-                    sOutArray[sOutArrayLength] = currentNode.getValue() + ":" + currentNode.getInstanceCount() + "\n";
-                    ++sOutArrayLength;
-                }
+                sOutArray[sOutArrayLength] = currentNode.getValue() + ":" + currentNode.getInstanceCount() + "\n";
+                ++sOutArrayLength;
 
                 currentNode = currentNode.getNext();
             }
@@ -234,7 +213,7 @@ public class OrderedLinkedListMultiset extends RmitMultiset
         if(mHead == null) {
             sOut.append("Error - No nodes in data structure\n");
         } else if(upper.compareTo(lower) < 0) {
-            sOut.append("Error - Invalid upper and lower boundaries");
+            sOut.append("Error - Invalid upper and lower boundaries\n");
         } else {
             Node currentNode = mHead;
 
@@ -243,7 +222,7 @@ public class OrderedLinkedListMultiset extends RmitMultiset
             }
 
             while(currentNode != null && currentNode.getValue().compareTo(upper) <= 0) {
-                sOut.append(currentNode.getValue() + "\n");
+                sOut.append(currentNode.getValue() + ":" + currentNode.getInstanceCount() + "\n");
                 currentNode = currentNode.getNext();
             }
         }

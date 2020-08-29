@@ -14,7 +14,7 @@ public class Node {
 
     public Node(String value) {
         this.value = value;
-        this.instanceCount = 0;
+        this.instanceCount = 1;
         this.mNext = null;
         this.mPrev = null;
     }

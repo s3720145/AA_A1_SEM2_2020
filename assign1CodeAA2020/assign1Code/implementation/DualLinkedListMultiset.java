@@ -11,66 +11,49 @@ import java.util.List;
 public class DualLinkedListMultiset extends RmitMultiset
 {   
     // reference to head node of LL ordered by element
-    private Node mHeadOriginal;
+    private Node mHeadO;
     // reference to head node of LL ordered by instance count
-    private Node mHeadInstance;
-    // keeps number of 
-    private String[] instanceCount;
+    private Node mHeadI;
 
-    // reference to number of element in the multiset
+    // reference to number of elements in the multiset
     private int length;
 
     public DualLinkedListMultiset() {
-        this.mHeadOriginal = null;
-        this.mHeadInstance = null;
-        this.instanceCount = new String[1000];
+        this.mHeadO = null;
+        this.mHeadI = null;
         this.length = 0;
     }
 
     @Override
 	public void add(String item) {
-        Node newNode = new Node(item);
-
-        // TODO: have a node that stores both item and value
-
-        // add into instance count array
-        if(instanceCount[0] == null) {
-            // if array is empty
-            instanceCount[0] = item + ":1";
+        // adding into the LL ordered by alphabet
+        if(mHeadO == null) {
+            // list empty
+            mHeadO = new Node(item);
+        } else if(item.compareTo(mHeadO.getValue()) == 0) {
+            // item equals mhead
+            mHeadO.setInstanceCount(mHeadO.getInstanceCount() + 1);
+        } else if(item.compareTo(mHeadO.getValue()) < 0) {
+            // item is less than mhead
+            Node newNode = new Node(item);
+            newNode.setNext(mHeadO);
+            mHeadO = newNode;
         } else {
-            int index = 0;
-            while(instanceCount[index] != null) {
-                // if the end of the array is reached
-                if(instanceCount[index + 1] == null) {
-                    instanceCount[index + 1] = item + ":1";
-                } else if(instanceCount[index].substring(0, instanceCount[index].indexOf(':')).compareTo(item) == 0) {
-                    int numInstances = Integer.parseInt(instanceCount[index].substring(instanceCount[index].indexOf(':') + 1, 
-                    instanceCount[index].length())) + 1;
-                    instanceCount[index] = item + ":" + numInstances;
-                    break;
-                }
-                ++index;
-            }
-        }
+            // iterate thru LL to find suitable insert
+            Node currentNode = mHeadO;
 
-        // add into original LL
-        // if the LL is empty
-        if(mHeadOriginal == null) {
-            mHeadOriginal = newNode;
-            mHeadInstance = newNode;
-        } else if(newNode.getValue().compareTo(mHeadOriginal.getValue()) <= 0) {
-            // if newNode is smaller than or equal to the head
-            newNode.setNext(mHeadOriginal);
-            mHeadOriginal = newNode;
-        } else {
-            Node currentNode = mHeadOriginal;
-            // iterate through list until a value larger than the newNode is found
             while(currentNode != null) {
-                // if the end of the LL is found insert the newNode
                 if(currentNode.getNext() == null) {
-                    currentNode.setNext(newNode);
+                    // if the end of the list is reached
+                    currentNode.setNext(new Node(item));
                     break;
-                } else if(newNode.getValue().compareTo(currentNode.getNext().getValue()) <= 0) {
+                } else if(item.compareTo(currentNode.getNext().getValue()) == 0) {
+                    // if currentNode has the same value as item
+                    currentNode.getNext().setInstanceCount(currentNode.getNext().getInstanceCount() + 1);
+                    break;
+                } else if(item.compareTo(currentNode.getNext().getValue()) < 0) {
+                    // item is less than current node
+                    Node newNode = new Node(item);
                     newNode.setNext(currentNode.getNext());
                     currentNode.setNext(newNode);
                     break;
@@ -80,8 +63,58 @@ public class DualLinkedListMultiset extends RmitMultiset
             }
         }
 
-        // add into LL sorted by instance count
+        // adding into LL ordered by instance from highest to lowest
+        if(mHeadI == null) {
+            mHeadI = new Node(item);
+        } else if(item.compareTo(mHeadI.getValue()) == 0) {
+            // head has the most instances no need to arrange
+            mHeadI.setInstanceCount(mHeadI.getInstanceCount() + 1);
+        } else {
+            Node currentNode = mHeadI;
+            Node prevNode = null;
 
+            while(currentNode != null) {
+                // if the node doesn't exist in the LL. we have reached the end of the list
+                if(currentNode.getNext() == null && item.compareTo(currentNode.getValue()) != 0) {
+                    currentNode.setNext(new Node(item));
+                    break;
+                } else if(item.compareTo(currentNode.getValue()) == 0) {
+                    // temp reference to currentNode
+                    Node tempCurrNode = currentNode;
+                    // update instance count and remove node
+                    tempCurrNode.setInstanceCount(tempCurrNode.getInstanceCount() + 1);
+                    prevNode.setNext(tempCurrNode.getNext());
+
+                    // reinsert node into LL from the start
+                    currentNode = mHeadI;
+
+                    while(currentNode != null) {
+                        if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
+                            tempCurrNode.setNext(mHeadI);
+                            mHeadI = tempCurrNode;
+                            break;
+                        } else if(tempCurrNode.getInstanceCount() >= currentNode.getNext().getInstanceCount()) {
+                            tempCurrNode.setNext(currentNode.getNext());
+                            currentNode.setNext(tempCurrNode);
+                            break;
+                        }
+
+                        currentNode = currentNode.getNext();
+                    }
+                    break;
+                }
+
+                prevNode = currentNode;
+                currentNode = currentNode.getNext();
+            }
+        }
+
+        Node currentNode = mHeadI;
+        while(currentNode != null) {
+            System.out.println(currentNode.getValue() + ":" + currentNode.getInstanceCount());
+            currentNode = currentNode.getNext();
+        }
+        
         ++length;
     } // end of add()
 
@@ -114,13 +147,157 @@ public class DualLinkedListMultiset extends RmitMultiset
 
     @Override
 	public void removeOne(String item) {
-        // Implement me!
+        // removing from LL that sorts by alphabet
+        if(mHeadO != null) {
+            Node currentNode = mHeadO;
+            Node prevNode = null;
+
+            // deleting head when instance count = 1
+            if(item.compareTo(mHeadO.getValue()) == 0 && mHeadO.getInstanceCount() == 1) {
+                mHeadO = currentNode.getNext();
+                currentNode = null;
+            } else if(item.compareTo(mHeadO.getValue()) == 0) {
+                // decreasing head instance count by 1
+                mHeadO.setInstanceCount(mHeadO.getInstanceCount() - 1);
+            } else {
+                while(currentNode != null) {
+                    // if deleting the last node on the list
+                    if(currentNode.getNext() == null && item.compareTo(currentNode.getValue()) == 0) {
+                        if(currentNode.getInstanceCount() == 1) {
+                            prevNode.setNext(null);
+                            currentNode = null;
+                        } else {
+                            currentNode.setInstanceCount(currentNode.getInstanceCount() - 1);
+                        }
+                        break;
+                    } else if(item.compareTo(currentNode.getValue()) == 0) {
+                        // if finding a node of equal value
+                        if(currentNode.getInstanceCount() == 1) {
+                            prevNode.setNext(currentNode.getNext());
+                            currentNode = null;
+                            break;
+                        } else {
+                            currentNode.setInstanceCount(currentNode.getInstanceCount() - 1);
+                            break;
+                        }
+                    }
+
+                    prevNode = currentNode;
+                    currentNode = currentNode.getNext();
+                }
+            }
+        }
+
+        // removing from LL sorting by instance
+        if(mHeadI != null) {
+            Node currentNode = mHeadI;
+            Node prevNode = null;
+
+            // deleting head when instance count = 1
+            if(item.compareTo(mHeadI.getValue()) == 0 && mHeadI.getInstanceCount() == 1) {
+                mHeadI = currentNode.getNext();
+                currentNode = null;
+            } else if(item.compareTo(mHeadI.getValue()) == 0) {
+                // temp reference to currentNode
+                Node tempCurrNode = currentNode;
+                // decreasing head instance count by 1 and remove node
+                tempCurrNode.setInstanceCount(tempCurrNode.getInstanceCount() - 1);
+                mHeadI = tempCurrNode.getNext();
+
+                // reinsert node into LL from the start
+                currentNode = mHeadI;
+
+                while(currentNode != null) {
+                    if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
+                        tempCurrNode.setNext(mHeadI);
+                        mHeadI = tempCurrNode;
+                        break;
+                    } else if(tempCurrNode.getInstanceCount() >= currentNode.getNext().getInstanceCount()) {
+                        tempCurrNode.setNext(currentNode.getNext());
+                        currentNode.setNext(tempCurrNode);
+                        break;
+                    }
+
+                    currentNode = currentNode.getNext();
+                }
+            } else {
+                while(currentNode != null) {
+                    // if deleting the last node on the list
+                    if(currentNode.getNext() == null && item.compareTo(currentNode.getValue()) == 0) {
+                        if(currentNode.getInstanceCount() == 1) {
+                            prevNode.setNext(null);
+                            currentNode = null;
+                        } else {
+                            // temp reference to currentNode
+                            Node tempCurrNode = currentNode;
+                            // decreasing head instance count by 1 and remove node
+                            tempCurrNode.setInstanceCount(tempCurrNode.getInstanceCount() - 1);
+                            prevNode.setNext(tempCurrNode.getNext());
+
+                            // reinsert node into LL from the start
+                            currentNode = mHeadI;
+
+                            while(currentNode != null) {
+                                if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
+                                    tempCurrNode.setNext(mHeadI);
+                                    mHeadI = tempCurrNode;
+                                    break;
+                                } else if(tempCurrNode.getInstanceCount() >= currentNode.getNext().getInstanceCount()) {
+                                    tempCurrNode.setNext(currentNode.getNext());
+                                    currentNode.setNext(tempCurrNode);
+                                    break;
+                                }
+
+                                currentNode = currentNode.getNext();
+                            }
+                        }
+                        break;
+                    } else if(item.compareTo(currentNode.getValue()) == 0) {
+                        // if finding a node of equal value
+                        if(currentNode.getInstanceCount() == 1) {
+                            prevNode.setNext(currentNode.getNext());
+                            currentNode = null;
+                            break;
+                        } else {
+                            // temp reference to currentNode
+                            Node tempCurrNode = currentNode;
+                            // decreasing head instance count by 1 and remove node
+                            tempCurrNode.setInstanceCount(tempCurrNode.getInstanceCount() - 1);
+                            prevNode.setNext(tempCurrNode.getNext());
+
+                            // reinsert node into LL from the start
+                            currentNode = mHeadI;
+
+                            while(currentNode != null) {
+                                if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
+                                    tempCurrNode.setNext(mHeadI);
+                                    mHeadI = tempCurrNode;
+                                    break;
+                                } else if(tempCurrNode.getInstanceCount() >= currentNode.getNext().getInstanceCount()) {
+                                    tempCurrNode.setNext(currentNode.getNext());
+                                    currentNode.setNext(tempCurrNode);
+                                    break;
+                                }
+
+                                currentNode = currentNode.getNext();
+                            }
+                            break;
+                        }
+                    }
+
+                    prevNode = currentNode;
+                    currentNode = currentNode.getNext();
+                }
+            }
+        }
+
+        --length;
     } // end of removeOne()
 
 
     @Override
 	public String print() {
-
+        StringBuffer sOut = new StringBuffer();
         // Placeholder, please update.
         return new String();
     } // end of OrderedPrint
@@ -128,9 +305,26 @@ public class DualLinkedListMultiset extends RmitMultiset
 
     @Override
 	public String printRange(String lower, String upper) {
+        StringBuffer sOut = new StringBuffer();
 
-        // Placeholder, please update.
-        return new String();
+        if(mHeadO == null) {
+            sOut.append("Error - No nodes in data structure\n");
+        } else if(upper.compareTo(lower) < 0) {
+            sOut.append("Error - Invalid upper and lower boundaries\n");
+        } else {
+            Node currentNode = mHeadO;
+
+            while(currentNode.getValue().compareTo(lower) < 0) {
+                currentNode = currentNode.getNext();
+            }
+
+            while(currentNode != null && currentNode.getValue().compareTo(upper) <= 0) {
+                sOut.append(currentNode.getValue() + ":" + currentNode.getInstanceCount() + "\n");
+                currentNode = currentNode.getNext();
+            }
+        }
+        
+        return sOut.toString();
     } // end of printRange()
 
 

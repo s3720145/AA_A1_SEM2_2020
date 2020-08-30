@@ -217,7 +217,7 @@ public class OrderedLinkedListMultiset extends RmitMultiset
         } else {
             Node currentNode = mHead;
 
-            while(currentNode.getValue().compareTo(lower) < 0) {
+            while(currentNode != null && currentNode.getValue().compareTo(lower) < 0) {
                 currentNode = currentNode.getNext();
             }
 
@@ -239,14 +239,18 @@ public class OrderedLinkedListMultiset extends RmitMultiset
 
         // inserting nodes from THIS linked list
         while(currentNode != null) {
-            union.add(currentNode.getValue());
+            for(int i = 0; i < currentNode.getInstanceCount(); ++i) {
+                union.add(currentNode.getValue());
+            }
             currentNode = currentNode.getNext();
         }
 
         // inserting nodes from the other multiset
         currentNode = casted.getHead();
         while(currentNode != null) {
-            union.add(currentNode.getValue());
+            for(int i = 0; i < currentNode.getInstanceCount(); ++i) {
+                union.add(currentNode.getValue());
+            }
             currentNode = currentNode.getNext();
         }
 
@@ -272,7 +276,11 @@ public class OrderedLinkedListMultiset extends RmitMultiset
             } else if(currentNodeOther.getValue().compareTo(currentNode.getValue()) < 0) {
                 currentNodeOther = currentNodeOther.getNext();
             } else {
-                intersect.add(currentNode.getValue());
+                int numInstances = currentNode.getInstanceCount() <= currentNodeOther.getInstanceCount() ? 
+                currentNode.getInstanceCount() : currentNodeOther.getInstanceCount();
+                for(int i = 0; i < numInstances; ++i) {
+                    intersect.add(currentNode.getValue());
+                }
                 currentNode = currentNode.getNext();
                 currentNodeOther = currentNodeOther.getNext();
             }
@@ -287,20 +295,23 @@ public class OrderedLinkedListMultiset extends RmitMultiset
         RmitMultiset difference = new OrderedLinkedListMultiset();
         OrderedLinkedListMultiset casted = (OrderedLinkedListMultiset) other;
         Node currentNode = mHead;
-        Node currentNodeOther = casted.getHead();
 
         // Difference is those elements in this multiset, subtract the elements in the other multiset.
-        while(currentNode != null && currentNodeOther != null) {
-            if(currentNode.getValue().compareTo(currentNodeOther.getValue()) < 0) {
-                difference.add(currentNode.getValue());
-                currentNode = currentNode.getNext();
-            } else if(currentNodeOther.getValue().compareTo(currentNode.getValue()) < 0) {
-                difference.add(currentNode.getValue());
-                currentNodeOther = currentNodeOther.getNext();
+        // iterate through current LL
+        while(currentNode != null) {
+            // if casted contains the current node value
+            if(casted.contains(currentNode.getValue())) {
+                int numInstances = currentNode.getInstanceCount() - casted.search(currentNode.getValue());
+                for(int i = 0; i < numInstances; ++i) {
+                    difference.add(currentNode.getValue());
+                }
             } else {
-                currentNode = currentNode.getNext();
-                currentNodeOther = currentNodeOther.getNext();
+                // if casted does not contain the current node value
+                for(int i = 0; i < currentNode.getInstanceCount(); ++i) {
+                    difference.add(currentNode.getValue());
+                }
             }
+            currentNode = currentNode.getNext();
         }
         
         return difference;

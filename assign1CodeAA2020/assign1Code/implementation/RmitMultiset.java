@@ -28,7 +28,7 @@ public abstract class RmitMultiset
 	 *
 	 * @param elem Element to search for.
 	 *
-	 * @return The number of instance of the element in the multiset.  If element is not in the multiset, return 0.
+	 * @return The number of instance of the element in the multiset.  If element is not in the multiset, return -1.
 	 */
 	public abstract int search(String elem);
 

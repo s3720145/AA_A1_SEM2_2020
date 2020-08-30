@@ -93,12 +93,12 @@ public class DualLinkedListMultiset extends RmitMultiset
                     currentNode = mHeadI;
 
                     while(currentNode != null) {
-                        if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
+                        if(currentNode.getNext() == null) {
+                            currentNode.setNext(tempCurrNode);
+                            break;
+                        } else if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
                             tempCurrNode.setNext(mHeadI);
                             mHeadI = tempCurrNode;
-                            break;
-                        } else if(currentNode.getNext() == null) {
-                            currentNode.setNext(tempCurrNode);
                             break;
                         } else if(tempCurrNode.getInstanceCount() >= currentNode.getNext().getInstanceCount()) {
                             tempCurrNode.setNext(currentNode.getNext());
@@ -243,17 +243,18 @@ public class DualLinkedListMultiset extends RmitMultiset
                 // decreasing head instance count by 1 and remove node
                 tempCurrNode.setInstanceCount(tempCurrNode.getInstanceCount() - 1);
                 mHeadI = tempCurrNode.getNext();
+                tempCurrNode.setNext(null);
 
                 // reinsert node into LL from the start
                 currentNode = mHeadI;
 
                 while(currentNode != null) {
-                    if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
+                    if(currentNode.getNext() == null) {
+                        currentNode.setNext(tempCurrNode);
+                        break;
+                    } if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
                         tempCurrNode.setNext(mHeadI);
                         mHeadI = tempCurrNode;
-                        break;
-                    } else if(currentNode.getNext() == null) {
-                        currentNode.setNext(tempCurrNode);
                         break;
                     } else if(tempCurrNode.getInstanceCount() >= currentNode.getNext().getInstanceCount()) {
                         tempCurrNode.setNext(currentNode.getNext());
@@ -276,17 +277,18 @@ public class DualLinkedListMultiset extends RmitMultiset
                             // decreasing head instance count by 1 and remove node
                             tempCurrNode.setInstanceCount(tempCurrNode.getInstanceCount() - 1);
                             prevNode.setNext(tempCurrNode.getNext());
+                            tempCurrNode.setNext(null);
 
                             // reinsert node into LL from the start
                             currentNode = mHeadI;
 
                             while(currentNode != null) {
-                                if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
+                                if(currentNode.getNext() == null) {
+                                    currentNode.setNext(tempCurrNode);
+                                    break;
+                                } else if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
                                     tempCurrNode.setNext(mHeadI);
                                     mHeadI = tempCurrNode;
-                                    break;
-                                } else if(currentNode.getNext() == null) {
-                                    currentNode.setNext(tempCurrNode);
                                     break;
                                 } else if(tempCurrNode.getInstanceCount() >= currentNode.getNext().getInstanceCount()) {
                                     tempCurrNode.setNext(currentNode.getNext());
@@ -310,17 +312,18 @@ public class DualLinkedListMultiset extends RmitMultiset
                             // decreasing head instance count by 1 and remove node
                             tempCurrNode.setInstanceCount(tempCurrNode.getInstanceCount() - 1);
                             prevNode.setNext(tempCurrNode.getNext());
+                            tempCurrNode.setNext(null);
 
                             // reinsert node into LL from the start
                             currentNode = mHeadI;
 
                             while(currentNode != null) {
-                                if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
+                                if(currentNode.getNext() == null) {
+                                    currentNode.setNext(tempCurrNode);
+                                    break;
+                                } else if(tempCurrNode.getInstanceCount() >= mHeadI.getInstanceCount()) {
                                     tempCurrNode.setNext(mHeadI);
                                     mHeadI = tempCurrNode;
-                                    break;
-                                } else if(currentNode.getNext() == null) {
-                                    currentNode.setNext(tempCurrNode);
                                     break;
                                 } else if(tempCurrNode.getInstanceCount() >= currentNode.getNext().getInstanceCount()) {
                                     tempCurrNode.setNext(currentNode.getNext());
@@ -339,6 +342,12 @@ public class DualLinkedListMultiset extends RmitMultiset
                 }
             }
         }
+
+        // Node currentNode = mHeadI;
+        // while(currentNode != null) {
+        //     System.out.println(currentNode.getValue() + ":" + currentNode.getInstanceCount());
+        //     currentNode = currentNode.getNext();
+        // }
 
         --length;
     } // end of removeOne()
